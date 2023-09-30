@@ -1,2 +1,2 @@
 # ChatEditor
-Chat business logic for searching and editing chat rooms, users and messages in the database.
+Chat business logic for searching and editing messages in the database.
