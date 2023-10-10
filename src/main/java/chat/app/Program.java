@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Program {
     public static void main(String[] args) {
-        String baseURL = "jdbc:postgresql://localhost/postgres";
+        String baseURL = "jdbc:postgresql://localhost:5433/postgres";
         String baseUser = "postgres";
         String basePassword = "postgres";
         DataBase dataBase = new DataBase(baseURL, baseUser, basePassword);
@@ -40,5 +40,6 @@ public class Program {
                 System.out.println("  Socializes : {}");
             }
         }
+        System.exit(0);
     }
 }
