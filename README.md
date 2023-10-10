@@ -24,25 +24,39 @@ Compiling and running:
     mvn exec:java -Dexec.mainClass="chat.app.Program"
 
 ## Usage
-There is no interface in the program. When launched, the program displays a list of users specified in the line parameters
+Follow the instructions in the terminal. When launched, the program displays a menu for interacting with the database.
 
-> List\<User> arrayList = usersRepository.findAll(3, 4);
+> 1. View a message by Id
+     
+Requests a message ID to display it.
 
-where \
-3 - is the number of the sheet being returned,\
-4 - is the count of users on the sheet.
+> 2. Add new message
 
-In addition, the program can do the following:
-- search messages by ID
-- adding new messages
-- message update
-- search for users by ID
-- search for chatrooms by ID
-- getting the maximum ID value for users, chatrooms and messages
-- search for users by name
-- search for chatrooms by name
+To add a message, you need to enter the author ID and chat room ID and the corresponding message text. The time is set to the current one.
 
-You can edit the `src\main\java\chat\app\Program.java` file to test these features.
+> 3. Update message
+
+To update a message, enter the message ID. If the message is found, enter new data (author, chat room, message text and time). You can skip entering new values by pressing enter.
+
+> 4. View list Users
+
+To display a page-by-page list of users, enter the number of users on the sheet and the number of the sheet to be returned.
+
+> 5. View count of Users
+
+Displays valid values for Users.
+
+> 6. View count of Chatroom's
+
+Displays valid values for Chatroom's.
+
+> 7. View count of Messages
+
+Displays valid values for Messages.
+
+> 8. Finish execution
+
+Exit
 
 ## Remove
 
