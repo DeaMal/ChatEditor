@@ -5,10 +5,13 @@ import chat.model.Message;
 import chat.model.User;
 import chat.repositories.MessagesRepositoryJdbcImpl;
 import chat.repositories.NotSavedSubEntityException;
+import chat.repositories.NotUpdateSubEntityException;
 import chat.repositories.UsersRepositoryJdbcImpl;
 
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -16,6 +19,8 @@ import java.util.Scanner;
 public class Menu {
     private final MessagesRepositoryJdbcImpl messagesRepository;
     private final UsersRepositoryJdbcImpl usersRepository;
+
+    private final String split = "---------------------------------------------------------";
 
     public Menu(DataSource dataSource) {
         messagesRepository = new MessagesRepositoryJdbcImpl(dataSource);
@@ -31,12 +36,13 @@ public class Menu {
             System.out.println("2. Add new message");
             System.out.println("3. Update message");
             System.out.println("4. View list Users");
-            System.out.println("5. Finish execution");
+            System.out.println("5. View count of Users");
+            System.out.println("6. View count of Chatroom's");
+            System.out.println("7. View count of Messages");
+            System.out.println("8. Finish execution");
             System.out.print("-> ");
             item = userIn(in);
-            if (item == 5) {
-                end = 1;
-            } else if (item == 1) {
+            if (item == 1) {
                 menuViewMessage();
             } else if (item == 2) {
                 menuAddNewMessage();
@@ -44,11 +50,19 @@ public class Menu {
                 menuUpdateMessage();
             } else if (item == 4) {
                 menuViewUserList();
+            } else if (item == 5) {
+                System.out.printf("%s\nUsers ID between 1 and %d\n", split, messagesRepository.getMaxId("User"));
+            } else if (item == 6) {
+                System.out.printf("%s\nChatroom's ID between 1 and %d\n", split, messagesRepository.getMaxId("Chatroom"));
+            } else if (item == 7) {
+                System.out.printf("%s\nMessage ID between 1 and %d\n", split, messagesRepository.getMaxId("Message"));
+            } else if (item == 8) {
+                end = 1;
             }
             if (in.hasNextLine()) {
                 in.nextLine();
             }
-            System.out.println("---------------------------------------------------------");
+            System.out.println(split);
         }
         in.close();
     }
@@ -57,7 +71,7 @@ public class Menu {
         long result = 0;
         if (in.hasNext() && in.hasNextInt()) {
             result = in.nextInt();
-            if ((result < 1) || (result > 5)) {
+            if ((result < 1) || (result > 8)) {
                 result = 0;
             }
         }
@@ -69,7 +83,7 @@ public class Menu {
         System.out.print("-> ");
         Scanner in = new Scanner(System.in);
         if (in.hasNext() && in.hasNextInt()) {
-            System.out.println("---------------------------------------------------------");
+            System.out.println(split);
             printMessage(in.nextInt());
         } else {
             System.out.println("Incorrect symbol");
@@ -93,7 +107,7 @@ public class Menu {
                 if (in.hasNextLine()) {
                     messageText = in.next();
                     if (!messageText.equals("")) {
-                        System.out.println("---------------------------------------------------------");
+                        System.out.println(split);
                         saveNewMessage(userId, chatroomId, messageText);
                     } else {
                         System.out.println("Message is empty");
@@ -109,8 +123,89 @@ public class Menu {
         }
     }
 
-    public static void menuUpdateMessage() {
-
+    public void menuUpdateMessage() {
+        long messageId, userId, chatroomId;
+        String temp;
+        User user;
+        Chatroom chatroom;
+        boolean err = false;
+        System.out.println("Enter a message ID");
+        System.out.print("-> ");
+        Scanner in = new Scanner(System.in);
+        if (in.hasNext() && in.hasNextInt()) {
+            messageId = in.nextInt();
+            in.nextLine();
+            Optional<Message> messageOptional = messagesRepository.findById(messageId);
+            if (messageOptional.isPresent()) {
+                Message message = messageOptional.get();
+                printMessage(messageId);
+                System.out.println("Enter a new author ID");
+                System.out.print("-> ");
+                temp = in.nextLine();
+                if (temp.isEmpty()) {
+                    userId = message.getMessageAuthor().getUserId();
+                } else {
+                    try {
+                        userId = Integer.parseInt(temp);
+                    } catch (NumberFormatException e) {
+                        userId = 0;
+                    }
+                }
+                user = messagesRepository.findUserById(userId);
+                if (user != null) {
+                    message.setMessageAuthor(user);
+                    System.out.println("Enter a new chatroom ID");
+                    System.out.print("-> ");
+                    temp = in.nextLine();
+                    if (temp.isEmpty()) {
+                        chatroomId = message.getMessageRoom().getChatroomId();
+                    } else {
+                        try {
+                            chatroomId = Integer.parseInt(temp);
+                        } catch (NumberFormatException e) {
+                            chatroomId = 0;
+                        }
+                    }
+                    chatroom = messagesRepository.findChatroomById(chatroomId);
+                    if (chatroom != null) {
+                        message.setMessageRoom(chatroom);
+                        System.out.println("Enter a new text message");
+                        System.out.print("-> ");
+                        temp = in.nextLine();
+                        message.setText(temp);
+                        System.out.println("Enter a new time (yyyy-MM-dd HH:mm:ss)");
+                        System.out.print("-> ");
+                        temp = in.nextLine();
+                        if (temp.isEmpty()) {
+                            message.setDate(null);
+                        } else {
+                            try {
+                                message.setDate(LocalDateTime.parse(temp, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                            } catch (DateTimeParseException e) {
+                                System.out.println("Wrong time format");
+                                err = true;
+                            }
+                        }
+                        if (!err) {
+                            try {
+                                messagesRepository.update(message);
+                                System.out.printf("Message ID = %d success update\n", messageId);
+                            } catch (NotUpdateSubEntityException e) {
+                                System.err.println(e.getMessage());
+                            }
+                        }
+                    } else {
+                        System.out.println("Chatroom not found!");
+                    }
+                } else {
+                    System.out.println("User not found!");
+                }
+            } else {
+                System.out.printf("%s\nMessage with ID %d not found\n", split, messageId);
+            }
+        } else {
+            System.out.println("Incorrect symbol");
+        }
     }
 
     public void menuViewUserList() {
@@ -126,7 +221,7 @@ public class Menu {
                 if (in.hasNext() && in.hasNextInt()) {
                     page = in.nextInt();
                     if (page >= 0) {
-                        System.out.println("---------------------------------------------------------");
+                        System.out.println(split);
                         printListUsers(page, size);
                     } else {
                         System.out.println("The value must be positive");
@@ -148,6 +243,7 @@ public class Menu {
             System.out.println("Message : " + message.get());
         } else {
             System.out.printf("Message with ID %d not found\n", messageId);
+            System.out.printf("Message ID between 1 and %d\n", messagesRepository.getMaxId("Message"));
         }
     }
 

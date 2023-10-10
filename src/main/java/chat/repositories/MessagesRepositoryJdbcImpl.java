@@ -25,11 +25,17 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM chat.message WHERE id = " + id);
             Optional<Message> result = Optional.empty();
             if (resultSet.next()) {
+                LocalDateTime ldt;
+                try {
+                    ldt = resultSet.getTimestamp(5).toLocalDateTime();
+                } catch (NullPointerException e) {
+                    ldt = null;
+                }
                 result = Optional.of(new Message(resultSet.getLong(1),
                         findUserById(resultSet.getLong(2)),
                         findChatroomById(resultSet.getLong(3)),
                         resultSet.getString(4),
-                        resultSet.getTimestamp(5).toLocalDateTime()));
+                        ldt));
             }
             connection.close();
             return result;
