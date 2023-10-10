@@ -11,15 +11,24 @@ import java.sql.Statement;
 import java.util.Scanner;
 
 public class DataBase {
-    private final DataSource data;
+    private static DataBase instance;
+    private DataSource data;
 
-    public DataBase(String url, String user, String password) {
+    private DataBase(){}
+
+    public static synchronized DataBase getInstance() {
+        if (instance == null) {
+            instance = new DataBase();
+        }
+        return instance;
+    }
+
+    public void init(String url, String user, String password) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(user);
         config.setPassword(password);
         data = new HikariDataSource(config);
-
     }
 
     public Connection connect() {

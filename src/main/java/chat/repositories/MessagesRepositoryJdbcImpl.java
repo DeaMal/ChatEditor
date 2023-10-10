@@ -142,7 +142,10 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM chat.chatroom WHERE id = " + id);
             Chatroom result = null;
             if (resultSet.next()) {
-                result = new Chatroom(id, resultSet.getString(2), null, null);
+                result = new Chatroom(id, resultSet.getString(2),
+                        new User(resultSet.getLong(3),
+                                findUserById(resultSet.getLong(3)).getLogin(),
+                                findUserById(resultSet.getLong(3)).getPassword(), null, null), null);
             }
             connection.close();
             return result;
