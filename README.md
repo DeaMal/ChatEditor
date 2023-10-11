@@ -23,6 +23,11 @@ Compiling and running:
     mvn compile
     mvn exec:java -Dexec.mainClass="chat.app.Program"
 
+or to create jar
+
+    mvn clean compile assembly:single
+    java -jar target/Chat-1.0-SNAPSHOT-jar-with-dependencies.jar
+
 ## Usage
 Follow the instructions in the terminal. When launched, the program displays a menu for interacting with the database.
 
