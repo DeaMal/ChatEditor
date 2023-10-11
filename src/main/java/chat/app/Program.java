@@ -10,7 +10,7 @@ public class Program {
     }
 
     public static DataBase dataBaseConnect() {
-        String baseURL = "jdbc:postgresql://localhost:5433/postgres";
+        String baseURL = "jdbc:postgresql://localhost:5432/postgres";
         String baseUser = "postgres";
         String basePassword = "postgres";
         DataBase dataBase = DataBase.getInstance();

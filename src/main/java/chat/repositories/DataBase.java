@@ -2,6 +2,7 @@ package chat.repositories;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
@@ -28,7 +29,12 @@ public class DataBase {
         config.setJdbcUrl(url);
         config.setUsername(user);
         config.setPassword(password);
-        data = new HikariDataSource(config);
+        try {
+            data = new HikariDataSource(config);
+        } catch (HikariPool.PoolInitializationException e) {
+            System.out.println("ERROR: Check your database connection settings");
+            System.exit(-1);
+        }
     }
 
     public Connection connect() {
